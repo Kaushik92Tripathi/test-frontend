@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   keywords: 'admin dashboard, healthcare management, appointment management, doctor management',
 };
 
-export default function AdminDashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
