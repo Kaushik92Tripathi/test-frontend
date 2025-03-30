@@ -55,6 +55,7 @@ export default function ProfilePage() {
           medicalHistory: profileData.user.profile.medicalHistory || ''
         });
         setAppointments(appointmentsData.appointments);
+        console.log(appointmentsData.appointments);
       } catch (err) {
         setError('Failed to load profile data');
         console.error(err);
@@ -77,7 +78,12 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateUserProfile(formData);
+      // Clean up form data by removing empty strings
+      const cleanedFormData = Object.fromEntries(
+        Object.entries(formData).map(([key, value]) => [key, value.trim() === '' ? null : value.trim()])
+      );
+      
+      await updateUserProfile(cleanedFormData);
       const { user: updatedUser } = await getUserProfile();
       setUser(updatedUser);
       setIsEditing(false);
@@ -94,6 +100,7 @@ export default function ProfilePage() {
       </div>
     );
   }
+
 
   return (
     <div className="container mx-auto px-4 py-8">

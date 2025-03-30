@@ -325,7 +325,7 @@ export interface UserAppointment {
 
 export async function getUserAppointments(): Promise<{ appointments: UserAppointment[] }> {
   try {
-    const response = await api.get('/appointments');
+    const response = await api.get('/user/appointments');
     return response.data;
   } catch (error) {
     console.error("Error fetching user appointments:", error);
