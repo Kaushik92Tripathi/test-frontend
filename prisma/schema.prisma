@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int     @id @default(autoincrement())
+  name         String
+  email        String  @unique
+  password     String?
+  role         String  @default("patient")
+  authProvider String? @default("email")
+  authId       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  profile      UserProfile?
+  doctor       Doctor?
+  reviews      Review[]
+  appointments Appointment[]
+}
+
+model UserProfile {
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
+  gender         String?
+  dateOfBirth    DateTime?
+  age            Int?
+  phone          String?
+  address        String?
+  profilePicture String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Specialty {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  doctors     Doctor[]
+}
+
+model Location {
+  id        Int    @id @default(autoincrement())
+  name      String
+  address   String
+  city      String
+  state     String?
+  zipCode   String?
+  country   String @default("India")
+  createdAt DateTime @default(now())
+
+  doctors   Doctor[]
+}
+
+model Doctor {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  specialtyId    Int?
+  degree         String
+  experienceYears Int     @default(0)
+  bio            String?
+  locationId     Int?
+  consultationFee Decimal?
+  isAvailable    Boolean  @default(true)
+  avgRating      Float    @default(0)
+  reviewCount    Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty  Specialty? @relation(fields: [specialtyId], references: [id])
+  location   Location? @relation(fields: [locationId], references: [id])
+  appointments Appointment[]
+  availability DoctorAvailability[]
+  reviews     Review[]
+}
+
+model TimeSlot {
+  id        Int    @id @default(autoincrement())
+  startTime DateTime
+  endTime   DateTime
+  createdAt DateTime @default(now())
+
+  availabilities DoctorAvailability[]
+  appointments   Appointment[]
+}
+
+model DoctorAvailability {
+  id         Int    @id @default(autoincrement())
+  doctorId   Int
+  dayOfWeek  Int  // 0 = Sunday, 6 = Saturday
+  timeSlotId Int
+  isAvailable Boolean @default(true)
+  createdAt  DateTime @default(now())
+
+  doctor   Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  timeSlot TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+}
+
+model Appointment {
+  id               Int      @id @default(autoincrement())
+  patientId        Int?
+  doctorId         Int?
+  appointmentDate  DateTime
+  timeSlotId       Int?
+  appointmentType  String  @default("offline")
+  status          String   @default("pending")
+  patientProblem   String?
+  patientAge       Int?
+  patientGender    String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+
+  patient    User?     @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  doctor     Doctor?   @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  timeSlot   TimeSlot? @relation(fields: [timeSlotId], references: [id], onDelete: SetNull)
+  review     Review?
+}
+
+model Review {
+  id           Int    @id @default(autoincrement())
+  appointmentId Int?  @unique
+  patientId    Int?
+  doctorId     Int
+  rating       Int    @default(1)
+  comment      String?
+  createdAt    DateTime @default(now())
+
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  patient     User?   @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  doctor      Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
