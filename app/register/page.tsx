@@ -6,6 +6,9 @@ import Image from "next/image";
 import { Eye, EyeOff, User, Phone, Mail, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getAuthUrl } from '@/config';
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "./loading";
 
 const ALLOWED_DOMAINS = ['gmail.com', 'tothenew.com'];
 
@@ -110,11 +113,11 @@ export default function Register() {
 
     if (!validateForm()) {
       setError("Please fix all validation errors before submitting");
+      toast.error("Please fix all validation errors before submitting");
       return;
     }
 
     setLoading(true);
-    console.log('Environment:', process.env.NODE_ENV);
 
     try {
       const response = await fetch(getAuthUrl('register'), {
@@ -135,10 +138,12 @@ export default function Register() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
+      toast.success("Registration successful!");
       router.push("/appointments");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred during registration");
-      console.error(err);
+      const message = err instanceof Error ? err.message : "An error occurred during registration";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -153,14 +158,23 @@ export default function Register() {
     });
     setValidationErrors({});
     setError("");
+    toast.success("Form has been reset");
   };
 
   const handleGoogleSignUp = () => {
     window.location.href = getAuthUrl('google');
   };
 
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
+
   return (
-    <div className="relative flex items-center justify-center min-h-screen">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative flex items-center justify-center min-h-screen"
+    >
       <Image
         src="/signup.svg"
         alt="Register Background"
@@ -169,17 +183,51 @@ export default function Register() {
         className="absolute inset-0"
       />
 
-      <div className="relative z-10 w-full max-w-md p-4 border border-white/40 rounded-xl shadow-lg backdrop-blur-lg bg-white/10">
-        <h1 className="mb-4 text-2xl font-bold text-center">Sign Up</h1>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="relative z-10 w-full max-w-md p-4 border border-white/40 rounded-xl shadow-lg backdrop-blur-lg bg-white/10"
+      >
+        <motion.h1 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-4 text-2xl font-bold text-center"
+        >
+          Sign Up
+        </motion.h1>
 
-        <p className="mb-4 text-sm text-center text-gray-500">
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-4 text-sm text-center text-gray-500"
+        >
           Already a member? {" "}
           <Link href="/login" className="text-primary hover:underline">Login</Link>.
-        </p>
+        </motion.p>
 
-        {error && <p className="text-red-500 text-center mb-3">{error}</p>}
+        <AnimatePresence>
+          {error && (
+            <motion.p 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="text-red-500 text-center mb-3"
+            >
+              {error}
+            </motion.p>
+          )}
+        </AnimatePresence>
 
-        <form className="space-y-3" onSubmit={handleSubmit}>
+        <motion.form 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="space-y-3" 
+          onSubmit={handleSubmit}
+        >
           <div className="space-y-0.5">
             <label htmlFor="name" className="text-sm font-medium text-gray-500">
               Name <span className="text-red-500">*</span>
@@ -190,16 +238,25 @@ export default function Register() {
                 id="name"
                 type="text"
                 placeholder="Enter your name"
-                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary ${
+                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary transition-colors ${
                   validationErrors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.name}
                 onChange={handleChange}
               />
             </div>
-            {validationErrors.name && (
-              <p className="text-sm text-red-500">{validationErrors.name}</p>
-            )}
+            <AnimatePresence>
+              {validationErrors.name && (
+                <motion.p 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-sm text-red-500"
+                >
+                  {validationErrors.name}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="space-y-0.5">
@@ -211,18 +268,26 @@ export default function Register() {
               <input
                 id="email"
                 type="email"
-                placeholder="Enter your email address"
-                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary ${
+                placeholder="Enter your email"
+                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary transition-colors ${
                   validationErrors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
-            {validationErrors.email && (
-              <p className="text-sm text-red-500">{validationErrors.email}</p>
-            )}
-            <p className="text-xs text-gray-500">Only Gmail and ToTheNew email domains are allowed</p>
+            <AnimatePresence>
+              {validationErrors.email && (
+                <motion.p 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-sm text-red-500"
+                >
+                  {validationErrors.email}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="space-y-0.5">
@@ -235,26 +300,38 @@ export default function Register() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className={`w-full h-10 pl-10 pr-10 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary ${
+                className={`w-full h-10 pl-10 pr-10 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary transition-colors ${
                   validationErrors.password ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.password}
                 onChange={handleChange}
               />
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 className="absolute transform -translate-y-1/2 right-3 top-1/2"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
-              </button>
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <Eye className="w-5 h-5 text-gray-400" />
+                )}
+              </motion.button>
             </div>
-            {validationErrors.password && (
-              <p className="text-sm text-red-500">{validationErrors.password}</p>
-            )}
-            <p className="text-xs text-gray-500">
-              Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character
-            </p>
+            <AnimatePresence>
+              {validationErrors.password && (
+                <motion.p 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-sm text-red-500"
+                >
+                  {validationErrors.password}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="space-y-0.5">
@@ -267,35 +344,49 @@ export default function Register() {
                 id="confirmPassword"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className={`w-full h-10 pl-10 pr-10 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary ${
+                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary transition-colors ${
                   validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
             </div>
-            {validationErrors.confirmPassword && (
-              <p className="text-sm text-red-500">{validationErrors.confirmPassword}</p>
-            )}
+            <AnimatePresence>
+              {validationErrors.confirmPassword && (
+                <motion.p 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-sm text-red-500"
+                >
+                  {validationErrors.confirmPassword}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full py-1.5 text-white rounded-md bg-primary hover:bg-primary/90" 
-            disabled={loading}
-          >
-            {loading ? "Submitting..." : "Submit"}
-          </button>
-          
-          <button 
-            type="button" 
-            className="w-full py-1.5 text-white rounded-md bg-gray-400 hover:bg-gray-500" 
-            onClick={handleReset}
-          >
-            Reset
-          </button>
+          <div className="flex gap-2">
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 py-2 text-white transition-colors rounded-md bg-primary hover:bg-primary/90"
+              disabled={loading}
+            >
+              {loading ? "Signing up..." : "Sign Up"}
+            </motion.button>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleReset}
+              className="px-4 py-2 text-gray-600 transition-colors bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Reset
+            </motion.button>
+          </div>
 
-          <div className="relative my-2">
+          <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
             </div>
@@ -304,24 +395,18 @@ export default function Register() {
             </div>
           </div>
 
-          <button
+          <motion.button
             type="button"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleGoogleSignUp}
-            className="w-full py-1.5 text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+            className="flex items-center justify-center w-full gap-2 py-2 text-gray-700 transition-colors bg-white border rounded-md hover:bg-gray-50"
           >
-            <div className="flex items-center justify-center">
-              <Image
-                src="/google.svg"
-                alt="Google"
-                width={20}
-                height={20}
-                className="mr-2"
-              />
-              Sign up with Google
-            </div>
-          </button>
-        </form>
-      </div>
-    </div>
+            <Image src="/google.svg" alt="Google" width={20} height={20} />
+            Google
+          </motion.button>
+        </motion.form>
+      </motion.div>
+    </motion.div>
   );
 }

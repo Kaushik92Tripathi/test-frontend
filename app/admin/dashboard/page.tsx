@@ -24,6 +24,7 @@ import {
 import { format } from "date-fns";
 import AdminMiddleware from "@/components/middleware/AdminMiddleware";
 import api, { searchAppointments, AppointmentSearchParams } from '@/lib/api';
+import { Metadata } from 'next';
 
 interface TimeSlot {
   id: number;
@@ -1178,3 +1179,9 @@ export default function AdminDashboard() {
     </AdminMiddleware>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Admin Dashboard - Healthcare App',
+  description: 'Manage appointments, doctors, and view healthcare system statistics.',
+  keywords: 'admin dashboard, healthcare management, appointment management, doctor management',
+};

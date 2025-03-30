@@ -29,22 +29,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initializeAuth = () => {
       try {
         const token = localStorage.getItem('token');
-        const name = localStorage.getItem('name');
-        const email = localStorage.getItem('email');
-        const profileImage = localStorage.getItem('profileImage');
         const userStr = localStorage.getItem('user');
 
         if (token && userStr) {
           const userData = JSON.parse(userStr);
-          setUser({
-            ...userData,
-            name: name || userData.name,
-            email: email || userData.email,
-            profile_picture: profileImage || userData.profile_picture
-          });
+          setUser(userData);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
+        // Clear potentially corrupted data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -56,12 +52,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    localStorage.removeItem('name');
-    localStorage.removeItem('email');
-    localStorage.removeItem('profileImage');
     setUser(null);
     router.push('/login');
   };
+
+  // Don't render children until initial auth check is complete
+  if (isLoading) {
+    return null; 
+  }
 
   return (
     <AuthContext.Provider value={{ user, setUser, isLoading, logout }}>

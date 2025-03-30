@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ChevronLeft, User, Phone, Mail, FileText, Calendar, Clock, MapPin, AlertCircle } from "lucide-react"
 import { createAppointment } from "@/lib/api"
+import Image from "next/image"
 
 interface ValidationErrors {
   name?: string;

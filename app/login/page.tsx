@@ -6,11 +6,16 @@ import Image from "next/image"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { getAuthUrl } from '@/config'
+import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
+import LoadingSkeleton from "./loading"
+import { useAuth } from "@/context/AuthContext"
 
 const ALLOWED_DOMAINS = ['gmail.com', 'tothenew.com'];
 
 export default function Login() {
   const router = useRouter()
+  const { setUser } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -24,6 +29,7 @@ export default function Login() {
     setPassword("")
     setError("")
     setEmailError("")
+    toast.success('Form has been reset')
   }
 
   const validateEmail = (email: string): boolean => {
@@ -34,6 +40,7 @@ export default function Login() {
     
     if (!ALLOWED_DOMAINS.includes(domain)) {
       setEmailError(`Only ${ALLOWED_DOMAINS.join(' and ')} domains are allowed`)
+      toast.error(`Only ${ALLOWED_DOMAINS.join(' and ')} domains are allowed`)
       return false;
     }
     
@@ -59,7 +66,6 @@ export default function Login() {
     }
 
     setLoading(true)
-    console.log('Environment:', process.env.NODE_ENV);
 
     try {
       const res = await fetch(getAuthUrl('login'), {
@@ -70,7 +76,17 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await res.json()
+      // Handle non-JSON responses first
+      if (res.status === 401) {
+        throw new Error('Email is not registered. Please sign up first.')
+      }
+
+      let data;
+      try {
+        data = await res.json()
+      } catch (parseError) {
+        throw new Error('Invalid credentials. Please try again.')
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'Invalid email or password')
@@ -80,6 +96,11 @@ export default function Login() {
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       
+      // Update the user state in AuthContext
+      setUser(data.user)
+      
+      toast.success('Login successful!')
+
       // Redirect based on user role
       if (data.user.role === 'admin') {
         router.push('/admin/dashboard')
@@ -87,8 +108,9 @@ export default function Login() {
         router.push('/appointments')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred during login")
-      console.error(err)
+      const message = err instanceof Error ? err.message : "An error occurred during login"
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -98,8 +120,16 @@ export default function Login() {
     window.location.href = getAuthUrl('google');
   }
 
+  if (loading) {
+    return <LoadingSkeleton />
+  }
+
   return (
-    <div className="relative flex items-center justify-center min-h-screen">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative flex items-center justify-center min-h-screen"
+    >
       {/* Background Image */}
       <Image
         src="/login.svg"
@@ -109,20 +139,54 @@ export default function Login() {
         className="absolute inset-0"
       />
 
-      <div className="relative z-10 w-full max-w-md p-6 border border-white/40 rounded-xl shadow-lg backdrop-blur-lg bg-white/10">
-        <h1 className="mb-6 text-2xl font-bold text-center">Login</h1>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="relative z-10 w-full max-w-md p-6 border border-white/40 rounded-xl shadow-lg backdrop-blur-lg bg-white/10"
+      >
+        <motion.h1 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-6 text-2xl font-bold text-center"
+        >
+          Login
+        </motion.h1>
 
-        <p className="mb-6 text-sm text-center text-gray-500">
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-6 text-sm text-center text-gray-500"
+        >
           Don't have an account?{" "}
           <Link href="/register" className="text-primary hover:underline">
             Sign up
           </Link>
           .
-        </p>
+        </motion.p>
 
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        <AnimatePresence>
+          {error && (
+            <motion.p 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="text-red-500 text-center mb-4"
+            >
+              {error}
+            </motion.p>
+          )}
+        </AnimatePresence>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <motion.form 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="space-y-4" 
+          onSubmit={handleSubmit}
+        >
           <div className="space-y-1">
             <label htmlFor="email" className="text-sm font-medium text-gray-500">
               Email
@@ -135,15 +199,24 @@ export default function Login() {
                 value={email}
                 onChange={handleEmailChange}
                 placeholder="Enter your email address"
-                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary ${
+                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary transition-colors ${
                   emailError ? 'border-red-500' : 'border-gray-300'
                 }`}
                 required
               />
             </div>
-            {emailError && (
-              <p className="text-sm text-red-500">{emailError}</p>
-            )}
+            <AnimatePresence>
+              {emailError && (
+                <motion.p 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-sm text-red-500"
+                >
+                  {emailError}
+                </motion.p>
+              )}
+            </AnimatePresence>
             <p className="text-xs text-gray-500">Only Gmail and ToTheNew email domains are allowed</p>
           </div>
 
@@ -159,11 +232,13 @@ export default function Login() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e)=>setPassword(e.target.value)}
-                className="w-full h-10 pl-10 pr-10 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-10 pl-10 pr-10 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
                 required
               />
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 className="absolute transform -translate-y-1/2 right-3 top-1/2"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -172,17 +247,19 @@ export default function Login() {
                 ) : (
                   <Eye className="w-5 h-5 text-gray-400" />
                 )}
-              </button>
+              </motion.button>
             </div>
           </div>
 
-          <button 
+          <motion.button 
             type="submit" 
-            className="w-full py-2 text-white rounded-md bg-primary hover:bg-primary/90"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full py-2 text-white rounded-md bg-primary hover:bg-primary/90 transition-colors"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}
-          </button>
+          </motion.button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -193,24 +270,18 @@ export default function Login() {
             </div>
           </div>
 
-          <button
+          <motion.button
             type="button"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleGoogleLogin}
-            className="w-full py-2 text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+            className="flex items-center justify-center w-full gap-2 py-2 text-gray-700 transition-colors bg-white border rounded-md hover:bg-gray-50"
           >
-            <div className="flex items-center justify-center">
-              <Image
-                src="/google.svg"
-                alt="Google"
-                width={20}
-                height={20}
-                className="mr-2"
-              />
-              Sign in with Google
-            </div>
-          </button>
-        </form>
-      </div>
-    </div>
+            <Image src="/google.svg" alt="Google" width={20} height={20} />
+            Google
+          </motion.button>
+        </motion.form>
+      </motion.div>
+    </motion.div>
   )
 }

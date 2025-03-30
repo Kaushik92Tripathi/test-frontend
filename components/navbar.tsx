@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { Menu, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -12,6 +13,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -28,6 +30,15 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleAppointmentsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (user) {
+      router.push('/appointments');
+    } else {
+      router.push('/login');
+    }
+  };
 
   return (
     <header className="border-b">
@@ -54,9 +65,13 @@ export default function Navbar() {
             <Link href="/" className="text-gray-500 hover:text-primary">
               Home
             </Link>
-            <Link href="/appointments" className="text-gray-500 hover:text-primary">
+            <a 
+              href="/appointments" 
+              onClick={handleAppointmentsClick}
+              className="text-gray-500 hover:text-primary cursor-pointer"
+            >
               Appointments
-            </Link>
+            </a>
             <Link href="/emergency" className="text-gray-500 hover:text-primary">
               Help
             </Link>
@@ -161,13 +176,21 @@ export default function Navbar() {
             >
               Home
             </Link>
-            <Link
+            <a
               href="/appointments"
-              className="block text-gray-500 hover:text-primary"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={(e) => {
+                e.preventDefault();
+                setIsMobileMenuOpen(false);
+                if (user) {
+                  router.push('/appointments');
+                } else {
+                  router.push('/login');
+                }
+              }}
+              className="block text-gray-500 hover:text-primary cursor-pointer"
             >
               Appointments
-            </Link>
+            </a>
             <Link
               href="/emergency"
               className="block text-gray-500 hover:text-primary"

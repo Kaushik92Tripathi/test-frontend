@@ -20,6 +20,11 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="description" content="Book appointments with top doctors, manage your health records, and get expert medical care from the comfort of your home." />
+        <meta name="keywords" content="healthcare, doctor appointments, online booking, medical care, health records" />
+        <meta name="author" content="HealthCare App" />
+        <link rel="icon" href="/logo.png" />
+
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProvider>

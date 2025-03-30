@@ -163,7 +163,7 @@ export default function AppointmentSuccess() {
 
           <div className="space-y-3">
             <Link
-              href="/appointments/my"
+              href="/profile"
               className="block w-full py-2 text-center text-white rounded-md bg-primary hover:bg-primary/90"
             >
               View My Appointments
