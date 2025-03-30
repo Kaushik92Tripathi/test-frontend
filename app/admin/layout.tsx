@@ -12,7 +12,7 @@ export default function AdminLayout({
     <AdminMiddleware>
       <div className="min-h-screen bg-gray-50">
         <AdminNavbar />
-        <main className="py-6">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {children}
         </main>
       </div>

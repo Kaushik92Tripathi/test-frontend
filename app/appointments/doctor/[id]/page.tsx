@@ -201,29 +201,29 @@ export default function DoctorProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container px-4 py-8 mx-auto md:px-6">
+      <div className="container px-4 py-6 sm:py-8 mx-auto md:px-6">
         <Link 
           href="/appointments" 
-          className="inline-flex items-center mb-6 text-sm text-gray-600 hover:text-gray-900"
+          className="inline-flex items-center mb-4 sm:mb-6 text-sm text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Appointments
         </Link>
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-6 lg:gap-8 md:grid-cols-3">
           {/* Doctor Profile Card */}
           <div className="md:col-span-1">
-            <div className="p-6 bg-white rounded-lg shadow-sm">
+            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-sm">
               <div className="flex flex-col items-center">
-                <div className="w-32 h-32 mb-4 overflow-hidden rounded-full">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 mb-4 overflow-hidden rounded-full">
                   <img
                     src={doctorData.profile_picture || "/default-avatar.png"}
                     alt={doctorData.name}
                     className="object-cover w-full h-full"
                   />
                 </div>
-                <h1 className="mb-1 text-xl font-bold">{doctorData.name}</h1>
-                <p className="mb-2 text-sm text-gray-500">{doctorData.degree}</p>
-                <div className="flex items-center mb-4">
+                <h1 className="mb-1 text-lg sm:text-xl font-bold text-center">{doctorData.name}</h1>
+                <p className="mb-2 text-sm text-gray-500 text-center">{doctorData.degree}</p>
+                <div className="flex items-center mb-4 flex-wrap justify-center">
                   <div className="flex mr-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
@@ -241,22 +241,22 @@ export default function DoctorProfile() {
 
                 <Link
                   href={`/appointments/book/doctor?id=${doctorData.id}`}
-                  className="w-full py-2 mb-4 text-center text-white rounded-md bg-primary hover:bg-primary/90"
+                  className="w-full py-2.5 mb-4 text-center text-white rounded-md bg-primary hover:bg-primary/90 text-sm sm:text-base font-medium"
                 >
                   Book Appointment
                 </Link>
 
-                <div className="w-full pt-4 mt-4 border-t">
-                  <div className="flex items-start mb-3">
-                    <MapPin className="w-5 h-5 mr-2 text-gray-500 shrink-0" />
+                <div className="w-full pt-4 mt-4 border-t space-y-4">
+                  <div className="flex items-start">
+                    <MapPin className="w-5 h-5 mr-3 text-gray-500 shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-600">{location}</p>
                   </div>
-                  <div className="flex items-center mb-3">
-                    <Calendar className="w-5 h-5 mr-2 text-gray-500" />
+                  <div className="flex items-start">
+                    <Calendar className="w-5 h-5 mr-3 text-gray-500 shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-600">{availableDays.join(", ")}</p>
                   </div>
-                  <div className="flex items-center">
-                    <Clock className="w-5 h-5 mr-2 text-gray-500" />
+                  <div className="flex items-start">
+                    <Clock className="w-5 h-5 mr-3 text-gray-500 shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-600">{hours}</p>
                   </div>
                 </div>
@@ -280,7 +280,7 @@ export default function DoctorProfile() {
 
           {/* Right Column - Reviews */}
           <div className="md:col-span-2">
-            <div className="p-6 bg-white rounded-lg shadow-sm">
+            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-sm">
               {doctorData && (
                 <DoctorReviews 
                   doctorId={doctorData.id} 
