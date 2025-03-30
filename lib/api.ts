@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Doctor, Specialty } from "@/types/doctor";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
