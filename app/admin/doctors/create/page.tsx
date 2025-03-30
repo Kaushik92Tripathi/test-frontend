@@ -36,26 +36,77 @@ function CreateDoctorForm() {
     }))
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setError("Image size should be less than 2MB")
-        return
-      }
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
 
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const base64String = reader.result as string
-        setPreviewUrl(base64String)
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Convert to JPEG with 0.7 quality
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(dataUrl);
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit before compression
+          setError("Image size should be less than 5MB");
+          return;
+        }
+
+        // Compress the image
+        const compressedImage = await compressImage(file);
+        
+        // Check compressed size (base64 string length * 0.75 gives approximate byte size)
+        const approximateSize = (compressedImage.length * 0.75) / (1024 * 1024); // size in MB
+        if (approximateSize > 1) { // 1MB limit after compression
+          setError("Image is too large even after compression. Please choose a smaller image.");
+          return;
+        }
+
+        setPreviewUrl(compressedImage);
         setFormData(prev => ({
           ...prev,
-          profile_picture: base64String
-        }))
+          profile_picture: compressedImage
+        }));
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        setError("Failed to process image. Please try another one.");
       }
-      reader.readAsDataURL(file)
     }
-  }
+  };
 
   const removeImage = () => {
     setPreviewUrl("")
