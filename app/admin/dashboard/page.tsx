@@ -95,6 +95,7 @@ interface Stats {
   confirmed: number;
   pending: number;
   cancelled: number;
+  completed: number;
 }
 
 interface Education {
@@ -121,7 +122,7 @@ type SortField = "name" | "specialty" | "experience" | "patients" | "rating";
 type SortOrder = "asc" | "desc";
 
 type AppointmentSortField = "id" | "patient" | "doctor" | "date" | "type";
-type AppointmentStatus = "all" | "confirmed" | "pending" | "cancelled";
+type AppointmentStatus = "all" | "confirmed" | "pending" | "cancelled" | "completed";
 
 // Add this helper function at the top level
 function formatTimeDisplay(time: string | null): string {
@@ -138,6 +139,7 @@ function AdminDashboardContent() {
     confirmed: 0,
     pending: 0,
     cancelled: 0,
+    completed: 0,
   });
 
   console.log(doctors)
@@ -350,7 +352,8 @@ function AdminDashboardContent() {
         total: response.data.stats.total || 0,
         confirmed: response.data.stats.confirmed || 0,
         pending: response.data.stats.pending || 0,
-        cancelled: response.data.stats.cancelled || 0
+        cancelled: response.data.stats.cancelled || 0,
+        completed: response.data.stats.completed || 0
       });
     } catch (error) {
       console.error('Error fetching appointments:', error);
@@ -374,7 +377,8 @@ function AdminDashboardContent() {
           total: appointmentsRes.data.stats.total || 0,
           confirmed: appointmentsRes.data.stats.confirmed || 0,
           pending: appointmentsRes.data.stats.pending || 0,
-          cancelled: appointmentsRes.data.stats.cancelled || 0
+          cancelled: appointmentsRes.data.stats.cancelled || 0,
+          completed: appointmentsRes.data.stats.completed || 0
         });
         setDoctors(doctorsData.map((doctor: any) => ({
           ...doctor,
@@ -430,6 +434,29 @@ function AdminDashboardContent() {
               ...prev,
               confirmed: prev.confirmed + 1,
               pending: prev.pending - 1,
+            }));
+          }
+          break;
+        case 'complete':
+          if (confirm('Are you sure you want to mark this appointment as completed?')) {
+            const response = await api.patch(`/appointments/${appointmentId}/status`, {
+              status: 'completed'
+            });
+
+            if (response.data.error) {
+              throw new Error(response.data.error);
+            }
+
+            // Update local state
+            setAppointments(appointments.map(apt => 
+              apt.id === appointmentId ? { ...apt, status: 'completed' } : apt
+            ));
+
+            // Update stats
+            setStats(prev => ({
+              ...prev,
+              completed: prev.completed + 1,
+              confirmed: prev.confirmed - 1,
             }));
           }
           break;
@@ -644,6 +671,7 @@ function AdminDashboardContent() {
                     <option value="all">All Status</option>
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
+                    <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
 
@@ -769,6 +797,8 @@ function AdminDashboardContent() {
                                   ? "bg-green-100 text-green-800"
                                   : appointment.status === "pending"
                                   ? "bg-yellow-100 text-yellow-800"
+                                  : appointment.status === "completed"
+                                  ? "bg-blue-100 text-blue-800"
                                   : "bg-red-100 text-red-800"
                               }`}
                             >
@@ -805,6 +835,15 @@ function AdminDashboardContent() {
                                     >
                                       <Check className="w-4 h-4 mr-2" />
                                       Confirm Appointment
+                                    </button>
+                                  )}
+                                  {appointment.status === "confirmed" && (
+                                    <button
+                                      onClick={() => handleAppointmentAction("complete", appointment.id)}
+                                      className="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-gray-100"
+                                    >
+                                      <Check className="w-4 h-4 mr-2" />
+                                      Mark as Completed
                                     </button>
                                   )}
                                   {appointment.status !== "cancelled" && (

@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { Doctor, Specialty } from "@/types/doctor";
+import config from '@/config';
 
-const API_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`;
-// const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000/api';
+console.log('Current Environment:', process.env.NODE_ENV);
+console.log('API URL:', config.apiUrl);
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${config.apiUrl}/api`,  // config.apiUrl already includes /api
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,18 +27,18 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error('Response Error:', error.response.data);
-      console.error('Response Status:', error.response.status);
-      console.error('Response Headers:', error.response.headers);
+      console.error(`API Error (${config.env}):`, {
+        data: error.response.data,
+        status: error.response.status,
+        url: error.config.url
+      });
     } else if (error.request) {
-      // The request was made but no response was received
-      console.error('Request Error:', error.request);
-      console.error('Error Message:', error.message);
+      console.error(`Request Error (${config.env}):`, {
+        request: error.request,
+        message: error.message
+      });
     } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error('Error:', error.message);
+      console.error(`Error (${config.env}):`, error.message);
     }
     return Promise.reject(error);
   }
@@ -145,6 +146,7 @@ export interface Review {
   comment: string;
   createdAt: string;
   patient: {
+    id: number;
     name: string;
   };
 }

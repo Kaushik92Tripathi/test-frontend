@@ -8,7 +8,7 @@ import { useParams } from "next/navigation"
 import DoctorReviews from '@/components/DoctorReviews'
 import { DoctorProfileSkeleton } from '../../../components/ui/Shimmer'
 import { Spinner } from '../../../components/ui/Spinner'
-import { getDoctorById, getDoctorAppointments } from "@/lib/api"
+import { getDoctorById, getDoctorAppointments, getDoctorReviews } from "@/lib/api"
 import { Doctor } from '@/types/doctor'
 
 interface DoctorData {
@@ -84,8 +84,17 @@ export default function DoctorProfile() {
 
       // Check if user can review
       try {
+        // Get completed appointments
         const { appointments } = await getDoctorAppointments(id, 'completed');
-        setCanReview(appointments.length > 0);
+        
+        // Get existing reviews
+        const { reviews } = await getDoctorReviews(id);
+        
+        // User can review if they have completed appointments and haven't reviewed yet
+        const hasCompletedAppointment = appointments.length > 0;
+        const hasReviewed = reviews.some(review => review.patient.id === doctor.userId);
+        
+        setCanReview(hasCompletedAppointment && !hasReviewed);
       } catch (error) {
         console.error('Error checking review eligibility:', error);
         setCanReview(false);

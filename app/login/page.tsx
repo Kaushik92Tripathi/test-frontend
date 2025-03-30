@@ -5,6 +5,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 import { useRouter } from 'next/navigation'
+import { getAuthUrl } from '@/config'
+
+const ALLOWED_DOMAINS = ['gmail.com', 'tothenew.com'];
 
 export default function Login() {
   const router = useRouter()
@@ -13,21 +16,53 @@ export default function Login() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [emailError, setEmailError] = useState("")
 
   // Reset function
   const handleReset = () => {
     setEmail("")
     setPassword("")
+    setError("")
+    setEmailError("")
+  }
+
+  const validateEmail = (email: string): boolean => {
+    if (!email) return false;
+    
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (!domain) return false;
+    
+    if (!ALLOWED_DOMAINS.includes(domain)) {
+      setEmailError(`Only ${ALLOWED_DOMAINS.join(' and ')} domains are allowed`)
+      return false;
+    }
+    
+    setEmailError("")
+    return true;
+  }
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    if (newEmail) validateEmail(newEmail);
+    else setEmailError("");
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError("")
-    console.log(email, password);
+    setEmailError("")
+
+    // Validate email domain before submission
+    if (!validateEmail(email)) {
+      return;
+    }
+
+    setLoading(true)
+    console.log('Environment:', process.env.NODE_ENV);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`, {
+      const res = await fetch(getAuthUrl('login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +95,7 @@ export default function Login() {
   }
 
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google`;
+    window.location.href = getAuthUrl('google');
   }
 
   return (
@@ -98,12 +133,18 @@ export default function Login() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e)=>setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 placeholder="Enter your email address"
-                className="w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                className={`w-full h-10 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary ${
+                  emailError ? 'border-red-500' : 'border-gray-300'
+                }`}
                 required
               />
             </div>
+            {emailError && (
+              <p className="text-sm text-red-500">{emailError}</p>
+            )}
+            <p className="text-xs text-gray-500">Only Gmail and ToTheNew email domains are allowed</p>
           </div>
 
           <div className="space-y-1">
