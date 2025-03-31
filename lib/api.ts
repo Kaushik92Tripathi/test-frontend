@@ -12,10 +12,9 @@ const api = axios.create({
   baseURL: `${config.apiUrl}/api`,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
-  withCredentials: true,
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN'
+  withCredentials: true
 });
 
 // Add request interceptor to handle credentials
