@@ -2,12 +2,16 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { LogOut, User } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function AdminNavbar() {
   const router = useRouter()
+  const { setUser } = useAuth()
 
   const handleLogout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setUser(null)
     router.push('/login')
   }
 

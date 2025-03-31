@@ -143,7 +143,6 @@ function AdminDashboardContent() {
     completed: 0,
   });
 
-  console.log(doctors)
 
   // New state variables
   const [loading, setLoading] = useState(true);
