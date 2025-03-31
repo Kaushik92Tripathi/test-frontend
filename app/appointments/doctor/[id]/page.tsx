@@ -3,13 +3,10 @@
 import Link from "next/link"
 import { Star, MapPin, Calendar, Clock, ArrowLeft } from "lucide-react"
 import { useEffect, useState } from "react"
-import { format } from "date-fns"
 import { useParams } from "next/navigation"
 import DoctorReviews from '@/components/DoctorReviews'
 import { DoctorProfileSkeleton } from '../../../components/ui/Shimmer'
-import { Spinner } from '../../../components/ui/Spinner'
 import { getDoctorById, getDoctorAppointments, getDoctorReviews } from "@/lib/api"
-import { Doctor } from '@/types/doctor'
 
 interface DoctorData {
   id: number;
@@ -225,7 +222,7 @@ export default function DoctorProfile() {
               <div className="flex flex-col items-center">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 mb-4 overflow-hidden rounded-full">
                   <img
-                    src={doctorData.profile_picture || "/default-avatar.png"}
+                    src={"/default-avatar.png"}
                     alt={doctorData.name}
                     className="object-cover w-full h-full"
                   />
