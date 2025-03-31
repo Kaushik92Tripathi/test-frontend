@@ -22,7 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { format } from "date-fns";
-import AdminMiddleware from "@/components/middleware/AdminMiddleware";
+import AdminMiddleware from "@/app/middleware/AdminMiddleware";
 import api, { searchAppointments, AppointmentSearchParams } from '@/lib/api';
 import { Metadata } from 'next';
 

@@ -312,8 +312,6 @@ export default function Register() {
               />
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
                 className="absolute transform -translate-y-1/2 right-3 top-1/2"
                 onClick={() => setShowPassword(!showPassword)}
               >
