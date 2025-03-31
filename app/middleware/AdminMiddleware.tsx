@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 
 interface AdminMiddlewareProps {
   children: React.ReactNode
@@ -9,35 +10,30 @@ interface AdminMiddlewareProps {
 
 export default function AdminMiddleware({ children }: AdminMiddlewareProps) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, isLoading, checkAuth } = useAuth()
 
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('token')
-      const user = localStorage.getItem('user')
-
-      if (!token || !user) {
-        router.push('/login')
-        return
-      }
-
+    const verifyAdmin = async () => {
       try {
-        const userData = JSON.parse(user)
+        const userData = await checkAuth();
+        
+        if (!userData) {
+          router.push('/login');
+          return;
+        }
+
         if (userData.role !== 'admin') {
-          router.push('/appointments')
-          return
+          router.push('/appointments');
+          return;
         }
       } catch (error) {
-        console.error('Error parsing user data:', error)
-        router.push('/login')
-        return
+        console.error('Error verifying admin:', error);
+        router.push('/login');
       }
+    };
 
-      setIsLoading(false)
-    }
-
-    checkAuth()
-  }, [router])
+    verifyAdmin();
+  }, [router, checkAuth]);
 
   if (isLoading) {
     return (
@@ -47,5 +43,12 @@ export default function AdminMiddleware({ children }: AdminMiddlewareProps) {
     )
   }
 
-  return <>{children}</>
+  // If we have a user and they're an admin, render the children
+  if (user && user.role === 'admin') {
+    return <>{children}</>;
+  }
+
+  // If we have a user but they're not an admin, they'll be redirected in the useEffect
+  // If we don't have a user, they'll be redirected in the useEffect
+  return null;
 } 

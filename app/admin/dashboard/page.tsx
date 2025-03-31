@@ -260,7 +260,7 @@ function AdminDashboardContent() {
             await api.delete(`/admin/doctors/${doctorId}`);
             setDoctors(doctors.filter(d => d.id !== doctorId));
           }
-          break;
+          break;  
         case "toggle-availability":
           const doctor = doctors.find(d => d.id === doctorId);
           if (!doctor) return;

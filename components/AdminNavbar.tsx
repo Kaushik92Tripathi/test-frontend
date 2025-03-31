@@ -6,13 +6,14 @@ import { useAuth } from '@/context/AuthContext'
 
 export default function AdminNavbar() {
   const router = useRouter()
-  const { setUser } = useAuth()
+  const { logout } = useAuth()
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    setUser(null)
-    router.push('/login')
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   }
 
   return (

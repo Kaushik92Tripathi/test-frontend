@@ -125,6 +125,7 @@ export default function Register() {
       const response = await fetch(getAuthUrl('register'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -134,10 +135,6 @@ export default function Register() {
       const data = await response.json();
       
       if (!response.ok) throw new Error(data.error || "Registration failed");
-      
-      // Store the token in localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
       
       // Update the AuthContext with the user data
       setUser(data.user);

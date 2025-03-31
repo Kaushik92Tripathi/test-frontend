@@ -73,6 +73,7 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       })
 
@@ -92,10 +93,6 @@ export default function Login() {
         throw new Error(data.error || 'Invalid email or password')
       }
 
-      // Store the token in localStorage
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      
       // Update the user state in AuthContext
       setUser(data.user)
       
